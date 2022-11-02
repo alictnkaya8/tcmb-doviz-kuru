@@ -4,7 +4,9 @@ import { Cron } from '@nestjs/schedule';
 import { SchedulerRegistry } from '@nestjs/schedule/dist';
 import { Model } from 'mongoose';
 import { Currency, CurrencyDocument } from './schemas/currency.schema';
+const moment = require('moment');
 const tcmbDovizKuru = require('tcmb-doviz-kuru');
+const tcmb = require('tcmb-exchange-rates');
 
 @Injectable()
 export class AppService {
@@ -28,7 +30,7 @@ export class AppService {
     return arr;
   }
 
-  @Cron('30 * * * * *')
+  // @Cron('30 * * * * *')
   async save() {
     let fetchedData = await this.getCurrency();
     console.log(fetchedData);
@@ -47,5 +49,22 @@ export class AppService {
       });
       newCurrency.save();
     }
+  }
+
+  get() {
+    let startDate = moment(new Date('1996/04/16'));
+    startDate.add(1, 'd');
+    startDate = startDate.format('DD/MM/YYYY');
+    const today = Date.now();
+    console.log(startDate);
+    console.log();
+
+    tcmb(null, startDate)
+      .then(function (data) {
+        console.log(data);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
   }
 }

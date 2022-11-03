@@ -5,13 +5,13 @@ import { AppService } from './app.service';
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @Get()
-  getCurrency() {
-    return this.appService.get();
-  }
-
   // @Get()
-  // save() {
-  //   return this.appService.save();
+  // getCurrency() {
+  //   return this.appService.get();
   // }
+
+  @Get()
+  save() {
+    return this.appService.save('1996/04/16');
+  }
 }

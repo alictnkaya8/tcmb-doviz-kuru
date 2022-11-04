@@ -1,11 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Cron } from '@nestjs/schedule';
-import { SchedulerRegistry } from '@nestjs/schedule/dist';
 import { Model } from 'mongoose';
 import { Currency, CurrencyDocument } from './schemas/currency.schema';
 const moment = require('moment');
-const tcmbDovizKuru = require('tcmb-doviz-kuru');
 const tcmb = require('tcmb-exchange-rates');
 
 @Injectable()
@@ -13,23 +11,7 @@ export class AppService {
   constructor(
     @InjectModel(Currency.name)
     private currencyModel: Model<CurrencyDocument>,
-    private scheduleRegistry: SchedulerRegistry,
   ) {}
-
-  async getCurrency() {
-    let arr = [];
-    await new Promise((resolve, reject) => {
-      function cb(error, data) {
-        if (error) {
-          console.log('error', error);
-        }
-        arr = data.tarihDate.currency;
-        resolve('aqaq');
-      }
-      tcmbDovizKuru(cb);
-    });
-    return arr;
-  }
 
   async saveDailyCurrencies(date) {
     let arr = [];

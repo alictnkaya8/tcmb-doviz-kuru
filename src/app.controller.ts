@@ -12,6 +12,6 @@ export class AppController {
 
   @Get()
   save() {
-    return this.appService.save('1996/04/16');
+    return this.appService.save();
   }
 }

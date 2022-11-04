@@ -31,62 +31,66 @@ export class AppService {
     return arr;
   }
 
-  async saveCurrenciesWithDate(date) {
+  async saveDailyCurrencies(date) {
     let arr = [];
     let currencies = await tcmb(null, date)
-      .then(function (data) {
+      .then((data) => {
         arr = Object.values(data);
         return Promise.resolve(arr);
       })
-      .catch(function (error) {
+      .catch((error) => {
         return Promise.reject(error);
       });
     return currencies;
   }
 
-  // @Cron('30 * * * * *')
-  async save(date) {
-    let counter = 1;
+  @Cron('*/5 * * * * *')
+  async save() {
+    let date;
     let fetchedData;
-    date = moment(new Date(date));
+    date = moment(new Date('1996/04/16'));
+
+    fetchedData = await this.currencyModel
+      .find()
+      .sort({ _id: -1 })
+      .limit(1)
+      .then((data) => {
+        date = moment(new Date(data['Day'] || '1996/04/15'));
+        date.add(1, 'd');
+        return Promise.resolve(date);
+      });
 
     for (let j = new Date(date).getTime(); j <= Date.now(); j += 24 * 60 * 60) {
       let formattedDate = date.format('DD/MM/YYYY');
-      if (counter % 10 !== 0) {
-        try {
-          fetchedData = await this.saveCurrenciesWithDate(formattedDate);
-        } catch (err) {
-          if (err.errorCode === '703') continue;
-        }
-      } else {
-        this.sleep('5000');
+      try {
+        fetchedData = await this.saveDailyCurrencies(formattedDate);
+      } catch (err) {
+        if (err.errorCode === '703') continue;
+        else if (err) break;
       }
 
-      console.log(formattedDate);
-      // console.log(fetchedData);
-
-      // for (let i = 0; i < fetchedData.length; i++) {
-      //   const newCurrency = new this.currencyModel({
-      //     Day: date,
-      //     Unit: fetchedData[i]['Unit'],
-      //     Isim: fetchedData[i]['Isim'],
-      //     CurrencyName: fetchedData[i]['CurrencyName'],
-      //     ForexBuying: fetchedData[i]['ForexBuying'],
-      //     ForexSelling: fetchedData[i]['ForexSelling'],
-      //     BanknoteBuying: fetchedData[i]['BanknoteBuying'],
-      //     BanknoteSelling: fetchedData[i]['BanknoteSelling'],
-      //     CrossRateUSD: fetchedData[i]['CrossRateUSD'],
-      //     CrossRateOther: fetchedData[i]['CrossRateOther'],
-      //   });
-      //   newCurrency.save();
-      // }
+      for (let i = 0; i < fetchedData.length; i++) {
+        const newCurrency = new this.currencyModel({
+          Day: date.format('YYYY/MM/DD'),
+          Unit: fetchedData[i]['Unit'],
+          Isim: fetchedData[i]['Isim'],
+          CurrencyName: fetchedData[i]['CurrencyName'],
+          ForexBuying: fetchedData[i]['ForexBuying'],
+          ForexSelling: fetchedData[i]['ForexSelling'],
+          BanknoteBuying: fetchedData[i]['BanknoteBuying'],
+          BanknoteSelling: fetchedData[i]['BanknoteSelling'],
+          CrossRateUSD: fetchedData[i]['CrossRateUSD'],
+          CrossRateOther: fetchedData[i]['CrossRateOther'],
+        });
+        newCurrency.save();
+      }
       date = date.add(1, 'd');
-      counter++;
     }
   }
-  private sleep(timeOut) {
-    return new Promise((resolve) => {
-      setTimeout(() => resolve(true), timeOut);
-    });
-  }
+
+  // private sleep(timeOut) {
+  //   return new Promise((resolve) => {
+  //     setTimeout(() => resolve(true), timeOut);
+  //   });
+  // }
 }

@@ -26,29 +26,36 @@ export class AppService {
     return currencies;
   }
 
-  @Cron('*/5 * * * * *')
+  // @Cron('*/5 * * * * *')
   async save() {
-    let date;
     let fetchedData;
-    date = moment(new Date('1996/04/16'));
+    let dateString = '1996/04/16';
+    let date = moment(new Date(dateString));
 
-    fetchedData = await this.currencyModel
-      .find()
-      .sort({ _id: -1 })
-      .limit(1)
-      .then((data) => {
-        date = moment(new Date(data['Day'] || '1996/04/15'));
-        date.add(1, 'd');
-        return Promise.resolve(date);
-      });
+    if ((await this.currencyModel.count()) != 0) {
+      fetchedData = await this.currencyModel
+        .find()
+        .sort({ _id: -1 })
+        .limit(1)
+        .then((data) => {
+          date = moment(new Date(data[0].Day));
+          date.add(1, 'd');
+          return Promise.resolve(date);
+        });
+    }
 
-    for (let j = new Date(date).getTime(); j <= Date.now(); j += 24 * 60 * 60) {
+    for (
+      let j = new Date(dateString).getTime();
+      j <= Date.now();
+      j += 24 * 60 * 60
+    ) {
       let formattedDate = date.format('DD/MM/YYYY');
       try {
         fetchedData = await this.saveDailyCurrencies(formattedDate);
       } catch (err) {
-        if (err.errorCode === '703') continue;
-        else if (err) break;
+        if (err.errorCode != '703') {
+          break;
+        }
       }
 
       for (let i = 0; i < fetchedData.length; i++) {

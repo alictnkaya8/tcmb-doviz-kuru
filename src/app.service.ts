@@ -45,6 +45,7 @@ export class AppService {
         fetchedData = await this.saveDailyCurrencies(formattedDate);
       } catch (err) {
         if (err.errorCode != '703') {
+          break;
         }
       }
 

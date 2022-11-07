@@ -26,8 +26,8 @@ export class AppService {
     return currencies;
   }
 
-  // @Cron('*/5 * * * * *')
-  async save() {
+  @Cron('*/30 * * * * *')
+  async saveCurrenciesWithDate() {
     let fetchedData;
     let dateString = '1996/04/16';
     let date = moment(new Date(dateString));
@@ -44,38 +44,73 @@ export class AppService {
         });
     }
 
-    for (
-      let j = new Date(dateString).getTime();
-      j <= Date.now();
-      j += 24 * 60 * 60
-    ) {
+    for (let i = 0; i < 5; i++) {
       let formattedDate = date.format('DD/MM/YYYY');
       try {
         fetchedData = await this.saveDailyCurrencies(formattedDate);
       } catch (err) {
         if (err.errorCode != '703') {
-          break;
         }
       }
-
-      for (let i = 0; i < fetchedData.length; i++) {
-        const newCurrency = new this.currencyModel({
-          Day: date.format('YYYY/MM/DD'),
-          Unit: fetchedData[i]['Unit'],
-          Isim: fetchedData[i]['Isim'],
-          CurrencyName: fetchedData[i]['CurrencyName'],
-          ForexBuying: fetchedData[i]['ForexBuying'],
-          ForexSelling: fetchedData[i]['ForexSelling'],
-          BanknoteBuying: fetchedData[i]['BanknoteBuying'],
-          BanknoteSelling: fetchedData[i]['BanknoteSelling'],
-          CrossRateUSD: fetchedData[i]['CrossRateUSD'],
-          CrossRateOther: fetchedData[i]['CrossRateOther'],
-        });
-        newCurrency.save();
-      }
-      date = date.add(1, 'd');
+      const newCurrency = new this.currencyModel({
+        Day: date.format('YYYY/MM/DD'),
+        Currencies: fetchedData,
+      });
+      newCurrency.save();
+      date.add(1, 'd');
     }
   }
+
+  // @Cron('*/5 * * * * *')
+  // async save() {
+  //   let fetchedData;
+  //   let dateString = '1996/04/16';
+  //   let date = moment(new Date(dateString));
+
+  //   if ((await this.currencyModel.count()) != 0) {
+  //     fetchedData = await this.currencyModel
+  //       .find()
+  //       .sort({ _id: -1 })
+  //       .limit(1)
+  //       .then((data) => {
+  //         date = moment(new Date(data[0].Day));
+  //         date.add(1, 'd');
+  //         return Promise.resolve(date);
+  //       });
+  //   }
+
+  //   for (
+  //     let j = new Date(dateString).getTime();
+  //     j <= Date.now();
+  //     j += 24 * 60 * 60
+  //   ) {
+  //     let formattedDate = date.format('DD/MM/YYYY');
+  //     try {
+  //       fetchedData = await this.saveDailyCurrencies(formattedDate);
+  //     } catch (err) {
+  //       if (err.errorCode != '703') {
+  //         break;
+  //       }
+  //     }
+
+  //     for (let i = 0; i < fetchedData.length; i++) {
+  //       const newCurrency = new this.currencyModel({
+  //         Day: date.format('YYYY/MM/DD'),
+  //         Unit: fetchedData[i]['Unit'],
+  //         Isim: fetchedData[i]['Isim'],
+  //         CurrencyName: fetchedData[i]['CurrencyName'],
+  //         ForexBuying: fetchedData[i]['ForexBuying'],
+  //         ForexSelling: fetchedData[i]['ForexSelling'],
+  //         BanknoteBuying: fetchedData[i]['BanknoteBuying'],
+  //         BanknoteSelling: fetchedData[i]['BanknoteSelling'],
+  //         CrossRateUSD: fetchedData[i]['CrossRateUSD'],
+  //         CrossRateOther: fetchedData[i]['CrossRateOther'],
+  //       });
+  //       newCurrency.save();
+  //     }
+  //     date = date.add(1, 'd');
+  //   }
+  // }
 
   // private sleep(timeOut) {
   //   return new Promise((resolve) => {

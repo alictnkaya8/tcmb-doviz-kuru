@@ -6,10 +6,31 @@ export type CurrencyDocument = Currency & Document;
 @Schema()
 export class Currency {
   @Prop()
-  Day: string;
+  symbol: string;
 
   @Prop()
-  Currencies: object[];
+  unit: string;
+
+  @Prop()
+  name: string;
+
+  @Prop()
+  forex_buying: number;
+
+  @Prop()
+  forex_selling: number;
+
+  @Prop()
+  banknote_buying: number;
+
+  @Prop()
+  banknote_selling: number;
+
+  @Prop()
+  cross_rate_usd: number;
+
+  @Prop()
+  cross_rate_other: number;
 }
 
 export const CurrencySchema = SchemaFactory.createForClass(Currency);

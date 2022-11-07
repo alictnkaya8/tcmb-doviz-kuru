@@ -9,4 +9,9 @@ export class AppController {
   // saveCurrencies() {
   //   return this.appService.saveCurrenciesWithDate();
   // }
+
+  // @Get()
+  // saveCurrencies() {
+  //   return this.appService.readAll();
+  // }
 }

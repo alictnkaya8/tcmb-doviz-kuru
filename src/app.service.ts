@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Cron } from '@nestjs/schedule';
 import { Model } from 'mongoose';
-import { exit } from 'process';
 import { Currencies, CurrenciesDocument } from './schemas/currencies.schema';
 import { Currency, CurrencyDocument } from './schemas/currency.schema';
 const moment = require('moment');
@@ -21,7 +20,7 @@ export class AppService {
     return this.currenciesModel.find();
   }
 
-  // @Cron('10 30 15 * * *')
+  // @Cron('* * 17 * * *')
   async saveCurrentCurrencies() {
     let currentDate = new Date().getDate();
     let currentMonth = new Date().getMonth();
@@ -34,7 +33,7 @@ export class AppService {
       fetchedData = await this.getCurrenciesWithDate(date);
     } catch (err) {
       if (err.errorCode != '703') {
-        exit();
+        return;
       }
     }
     let currencyArr = await this.modifyCurrencyData(fetchedData);
@@ -43,7 +42,7 @@ export class AppService {
       day: date,
       currencies: currencyArr,
     });
-    console.log(newCurrencies);
+    newCurrencies.save();
   }
 
   @Cron('*/10 * * * * *')
@@ -62,6 +61,17 @@ export class AppService {
           date.add(1, 'd');
           return Promise.resolve(date);
         });
+
+      let foundData = await this.currenciesModel.findOne({
+        day: date.format('YYYY/MM/DD'),
+      });
+      if (foundData) {
+        console.log(
+          'Dönen tarihe ait kayıt db de olduğu için geçmiş dataları dönen cronjob durdurulmalı!!!',
+          date.format('YYYY/MM/DD'),
+        );
+        return;
+      }
     }
 
     for (let j = 0; j < 10; j++) {

@@ -21,6 +21,7 @@ export class AppService {
     return this.currenciesModel.find();
   }
 
+  // @Cron('10 30 15 * * *')
   async saveCurrentCurrencies() {
     let currentDate = new Date().getDate();
     let currentMonth = new Date().getMonth();
@@ -36,7 +37,6 @@ export class AppService {
         exit();
       }
     }
-
     let currencyArr = await this.modifyCurrencyData(fetchedData);
 
     const newCurrencies = new this.currenciesModel({
@@ -46,7 +46,7 @@ export class AppService {
     console.log(newCurrencies);
   }
 
-  @Cron('*/30 * * * * *')
+  @Cron('*/10 * * * * *')
   async saveCurrenciesWithDate() {
     let fetchedData;
     let dateString = '1996/04/16';
@@ -64,7 +64,7 @@ export class AppService {
         });
     }
 
-    for (let i = 0; i < 5; i++) {
+    for (let j = 0; j < 10; j++) {
       let formattedDate = date.format('DD/MM/YYYY');
       try {
         fetchedData = await this.getCurrenciesWithDate(formattedDate);
@@ -87,18 +87,18 @@ export class AppService {
 
   private async modifyCurrencyData(fetchedData) {
     let arr = [];
-    for (let j = 0; j < fetchedData.length; j++) {
+    for (let i = 0; i < fetchedData.length; i++) {
       arr.push(
         new this.currencyModel({
-          symbol: fetchedData[j]['$']['CurrencyCode'],
-          unit: fetchedData[j]['Unit'],
-          name: fetchedData[j]['CurrencyName'],
-          forex_buying: fetchedData[j]['ForexBuying'],
-          forex_selling: fetchedData[j]['ForexSelling'],
-          banknote_buying: fetchedData[j]['BanknoteBuying'],
-          banknote_selling: fetchedData[j]['BanknoteSelling'],
-          cross_rate_usd: fetchedData[j]['CrossRateUSD'],
-          cross_rate_other: fetchedData[j]['CrossRateOther'],
+          symbol: fetchedData[i]['$']['CurrencyCode'],
+          unit: fetchedData[i]['Unit'],
+          name: fetchedData[i]['CurrencyName'],
+          forex_buying: fetchedData[i]['ForexBuying'],
+          forex_selling: fetchedData[i]['ForexSelling'],
+          banknote_buying: fetchedData[i]['BanknoteBuying'],
+          banknote_selling: fetchedData[i]['BanknoteSelling'],
+          cross_rate_usd: fetchedData[i]['CrossRateUSD'],
+          cross_rate_other: fetchedData[i]['CrossRateOther'],
         }),
       );
     }

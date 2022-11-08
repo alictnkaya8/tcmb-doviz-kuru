@@ -5,10 +5,10 @@ import { AppService } from './app.service';
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  // @Get()
-  // saveCurrencies() {
-  //   return this.appService.saveCurrenciesWithDate();
-  // }
+  @Get()
+  saveCurrencies() {
+    return this.appService.saveCurrenciesWithDate();
+  }
 
   // @Get()
   // saveCurrentCurrencies() {

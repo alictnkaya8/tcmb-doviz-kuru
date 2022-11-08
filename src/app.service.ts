@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Cron } from '@nestjs/schedule';
 import { Model } from 'mongoose';
+import { exit } from 'process';
 import { Currencies, CurrenciesDocument } from './schemas/currencies.schema';
 import { Currency, CurrencyDocument } from './schemas/currency.schema';
 const moment = require('moment');
@@ -20,10 +21,34 @@ export class AppService {
     return this.currenciesModel.find();
   }
 
+  async saveCurrentCurrencies() {
+    let currentDate = new Date().getDate();
+    let currentMonth = new Date().getMonth();
+    let currentYear = new Date().getFullYear();
+    let date = moment(new Date(currentYear, currentMonth, currentDate));
+    date = date.format('DD/MM/YYYY');
+    let fetchedData;
+
+    try {
+      fetchedData = await this.getCurrenciesWithDate(date);
+    } catch (err) {
+      if (err.errorCode != '703') {
+        exit();
+      }
+    }
+
+    let currencyArr = await this.modifyCurrencyData(fetchedData);
+
+    const newCurrencies = new this.currenciesModel({
+      day: date,
+      currencies: currencyArr,
+    });
+    console.log(newCurrencies);
+  }
+
   @Cron('*/30 * * * * *')
   async saveCurrenciesWithDate() {
     let fetchedData;
-    let arr = [];
     let dateString = '1996/04/16';
     let date = moment(new Date(dateString));
 
@@ -42,38 +67,46 @@ export class AppService {
     for (let i = 0; i < 5; i++) {
       let formattedDate = date.format('DD/MM/YYYY');
       try {
-        fetchedData = await this.saveDailyCurrencies(formattedDate);
+        fetchedData = await this.getCurrenciesWithDate(formattedDate);
       } catch (err) {
         if (err.errorCode != '703') {
           break;
         }
       }
+      let currencyArr = await this.modifyCurrencyData(fetchedData);
 
-      for (let j = 0; j < fetchedData.length; j++) {
-        arr.push(
-          new this.currencyModel({
-            symbol: fetchedData[j]['$']['CurrencyCode'],
-            unit: fetchedData[j]['Unit'],
-            name: fetchedData[j]['CurrencyName'],
-            forex_buying: fetchedData[j]['ForexBuying'],
-            forex_selling: fetchedData[j]['ForexSelling'],
-            banknote_buying: fetchedData[j]['BanknoteBuying'],
-            banknote_selling: fetchedData[j]['BanknoteSelling'],
-            cross_rate_usd: fetchedData[j]['CrossRateUSD'],
-            cross_rate_other: fetchedData[j]['CrossRateOther'],
-          }),
-        );
-      }
       const newCurrencies = new this.currenciesModel({
         day: date.format('YYYY/MM/DD'),
-        currencies: arr,
+        currencies: currencyArr,
       });
+
       newCurrencies.save();
       date.add(1, 'd');
     }
   }
 
-  private async saveDailyCurrencies(date) {
+  private async modifyCurrencyData(fetchedData) {
+    let arr = [];
+    for (let j = 0; j < fetchedData.length; j++) {
+      arr.push(
+        new this.currencyModel({
+          symbol: fetchedData[j]['$']['CurrencyCode'],
+          unit: fetchedData[j]['Unit'],
+          name: fetchedData[j]['CurrencyName'],
+          forex_buying: fetchedData[j]['ForexBuying'],
+          forex_selling: fetchedData[j]['ForexSelling'],
+          banknote_buying: fetchedData[j]['BanknoteBuying'],
+          banknote_selling: fetchedData[j]['BanknoteSelling'],
+          cross_rate_usd: fetchedData[j]['CrossRateUSD'],
+          cross_rate_other: fetchedData[j]['CrossRateOther'],
+        }),
+      );
+    }
+
+    return Promise.resolve(arr);
+  }
+
+  private async getCurrenciesWithDate(date) {
     let arr = [];
     let currencies = await tcmb(null, date)
       .then((data) => {

@@ -11,7 +11,7 @@ export class AppController {
   // }
 
   // @Get()
-  // saveCurrencies() {
-  //   return this.appService.readAll();
+  // saveCurrentCurrencies() {
+  //   return this.appService.saveCurrentCurrencies();
   // }
 }

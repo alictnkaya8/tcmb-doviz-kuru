@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron, CronExpression, Interval } from '@nestjs/schedule';
 import { Model } from 'mongoose';
 import { Currencies, CurrenciesDocument } from './schemas/currencies.schema';
 import { Currency, CurrencyDocument } from './schemas/currency.schema';
@@ -16,10 +16,9 @@ export class AppService {
     private currencyModel: Model<CurrencyDocument>,
   ) {}
 
-  async readAll() {
+  readAll() {
     return this.currenciesModel.find();
   }
-
   async getCurrencies(date: string) {
     let parsedDate;
 
@@ -46,7 +45,7 @@ export class AppService {
     return fetchedData;
   }
 
-  // @Cron('* * 17 * * *')
+  @Cron('* * 17 * * *')
   async saveCurrentCurrencies() {
     let currentDate = new Date().getDate();
     let currentMonth = new Date().getMonth();

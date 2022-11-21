@@ -1,8 +1,7 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { ConfigService } from '@nestjs/config/dist';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ScheduleModule } from '@nestjs/schedule/dist';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { Currencies, CurrenciesSchema } from './schemas/currencies.schema';
@@ -10,7 +9,6 @@ import { Currency, CurrencySchema } from './schemas/currency.schema';
 
 @Module({
   imports: [
-    ScheduleModule.forRoot(),
     MongooseModule.forRoot('mongodb://localhost:27017'),
     // ConfigModule.forRoot(),
     // MongooseModule.forRootAsync({
@@ -32,6 +30,7 @@ import { Currency, CurrencySchema } from './schemas/currency.schema';
       { name: Currencies.name, schema: CurrenciesSchema },
       { name: Currency.name, schema: CurrencySchema },
     ]),
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -10,7 +10,9 @@ import { Currency, CurrencySchema } from './schemas/currency.schema';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     MongooseModule.forRoot('mongodb://localhost:27017'),
+    // ConfigModule.forRoot(),
     // MongooseModule.forRootAsync({
     //   imports: [ConfigModule],
     //   useFactory: async (configService: ConfigService) => {
@@ -30,7 +32,6 @@ import { Currency, CurrencySchema } from './schemas/currency.schema';
       { name: Currencies.name, schema: CurrenciesSchema },
       { name: Currency.name, schema: CurrencySchema },
     ]),
-    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService],

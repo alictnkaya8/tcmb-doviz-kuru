@@ -11,12 +11,12 @@ export class AppController {
   // }
 
   @Get(':date')
-  getCurrencies(@Param('date') date: string) {
+  getCurrenciesOfDate(@Param('date') date: string) {
     return this.appService.getCurrencies(date);
   }
 
-  // @Get()
-  // saveCurrentCurrencies() {
-  //   return this.appService.saveCurrentCurrencies();
-  // }
+  @Get()
+  getAllCurrencies() {
+    return this.appService.readAll();
+  }
 }
